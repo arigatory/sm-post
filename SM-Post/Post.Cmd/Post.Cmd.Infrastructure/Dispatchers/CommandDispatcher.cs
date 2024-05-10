@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using CQRS.Core.Commands;
 using CQRS.Core.Infrastructure;
 

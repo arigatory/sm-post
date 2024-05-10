@@ -2,7 +2,7 @@ using CQRS.Core.Events;
 
 namespace CQRS.Core.Domain;
 
-public class AggregateRoot
+public abstract class AggregateRoot
 {
     protected Guid _id;
     private readonly List<BaseEvent> _changes = new();
@@ -26,7 +26,7 @@ public class AggregateRoot
 
         if (method == null)
         {
-            throw new ArgumentNullException(nameof(method), $"The Appli method was not found in the aggregate for {@event.GetType().Name}!");
+            throw new ArgumentNullException(nameof(method), $"The Apply method was not found in the aggregate for {@event.GetType().Name}!");
         }
 
         method.Invoke(this, new object[] { @event });

@@ -2,7 +2,8 @@ version: "3.4"
 
 services:
   zookeeper:
-    image: bitnami/zookeeper:3.8
+    image: docker.io/bitnami/zookeeper:3.9
+    container_name: zookeeper
     restart: always
     ports:
       - "2181:2181"
@@ -11,27 +12,52 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
   kafka:
-    image: bitnami/kafka:3.4
+    image: docker.io/bitnami/kafka:3.5
+    container_name: kafka
     ports:
       - "9092:9092"
     restart: always
     volumes:
       - "kafka_data:/bitnami"
     environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
     depends_on:
       - zookeeper
 
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+      - "mongo_data:/data/db"
+
+  sqlserver:
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    environment:
+      DOCKER_DEFAULT_PLATFORM: linux/arm64
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Password123"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    restart: always
 volumes:
   zookeeper_data:
     driver: local
   kafka_data:
     driver: local
-   
+  mongo_data:
+    driver: local
+
 networks:
   default:
-    external:
-      name: mydockernetwork
+    name: mydockernetwork
+    external: true

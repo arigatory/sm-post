@@ -1,4 +1,4 @@
-version: "3.4"
+version: '3.4'
 
 services:
   zookeeper:
@@ -6,19 +6,19 @@ services:
     container_name: zookeeper
     restart: always
     ports:
-      - "2181:2181"
+      - '2181:2181'
     volumes:
-      - "zookeeper_data:/bitnami"
+      - 'zookeeper_data:/bitnami'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
   kafka:
     image: docker.io/bitnami/kafka:3.5
     container_name: kafka
     ports:
-      - "9092:9092"
+      - '9092:9092'
     restart: always
     volumes:
-      - "kafka_data:/bitnami"
+      - 'kafka_data:/bitnami'
     environment:
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
@@ -35,20 +35,32 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
     ports:
-      - "27017:27017"
+      - '27017:27017'
     volumes:
-      - "mongo_data:/data/db"
+      - 'mongo_data:/data/db'
 
   sqlserver:
-    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    image: 'mcr.microsoft.com/mssql/server:2022-latest'
     environment:
       DOCKER_DEFAULT_PLATFORM: linux/arm64
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "Password123"
-      MSSQL_PID: "Express"
+      ACCEPT_EULA: 'Y'
+      SA_PASSWORD: 'Password123'
+      MSSQL_PID: 'Express'
     ports:
-      - "1433:1433"
+      - '1433:1433'
     restart: always
+
+  postgres:
+    container_name: postgres
+    image: postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - db:/data/postgres
+
 volumes:
   zookeeper_data:
     driver: local
@@ -56,6 +68,7 @@ volumes:
     driver: local
   mongo_data:
     driver: local
+  db:
 
 networks:
   default:

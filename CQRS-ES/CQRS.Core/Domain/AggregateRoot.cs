@@ -22,7 +22,7 @@ public abstract class AggregateRoot
 
     private void ApplyChange(BaseEvent @event, bool isNew)
     {
-        var method = this.GetType().GetMethod("Apply", new Type[] { @event.GetType() });
+        var method = GetType().GetMethod("Apply", new Type[] { @event.GetType() });
 
         if (method == null)
         {

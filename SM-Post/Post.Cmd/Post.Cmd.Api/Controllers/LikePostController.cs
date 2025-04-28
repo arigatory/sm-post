@@ -10,10 +10,10 @@ namespace Post.Cmd.Api.Controllers;
 [Route("/api/v1/[controller]")]
 public class LikePostController : ControllerBase
 {
-    private readonly ILogger<NewPostController> _logger;
+    private readonly ILogger<LikePostController> _logger;
     private readonly ICommandDispatcher _commandDispatcher;
 
-    public LikePostController(ILogger<NewPostController> logger, ICommandDispatcher commandDispatcher)
+    public LikePostController(ILogger<LikePostController> logger, ICommandDispatcher commandDispatcher)
     {
         _logger = logger;
         _commandDispatcher = commandDispatcher;

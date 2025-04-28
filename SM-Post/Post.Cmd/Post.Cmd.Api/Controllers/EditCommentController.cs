@@ -10,10 +10,10 @@ namespace Post.Cmd.Api.Controllers;
 [Route("/api/v1/[controller]")]
 public class EditCommentController : ControllerBase
 {
-    private readonly ILogger<NewPostController> _logger;
+    private readonly ILogger<EditCommentController> _logger;
     private readonly ICommandDispatcher _commandDispatcher;
 
-    public EditCommentController(ILogger<NewPostController> logger, ICommandDispatcher commandDispatcher)
+    public EditCommentController(ILogger<EditCommentController> logger, ICommandDispatcher commandDispatcher)
     {
         _logger = logger;
         _commandDispatcher = commandDispatcher;

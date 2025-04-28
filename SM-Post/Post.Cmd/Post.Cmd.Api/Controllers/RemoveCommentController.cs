@@ -10,10 +10,10 @@ namespace Post.Cmd.Api.Controllers;
 [Route("/api/v1/[controller]")]
 public class RemoveCommentController : ControllerBase
 {
-    private readonly ILogger<NewPostController> _logger;
+    private readonly ILogger<RemoveCommentController> _logger;
     private readonly ICommandDispatcher _commandDispatcher;
 
-    public RemoveCommentController(ILogger<NewPostController> logger, ICommandDispatcher commandDispatcher)
+    public RemoveCommentController(ILogger<RemoveCommentController> logger, ICommandDispatcher commandDispatcher)
     {
         _logger = logger;
         _commandDispatcher = commandDispatcher;

@@ -15,10 +15,10 @@ namespace Post.Cmd.Api.Controllers;
 public class DeletePostController : ControllerBase
 {
     
-    private readonly ILogger<NewPostController> _logger;
+    private readonly ILogger<DeletePostController> _logger;
     private readonly ICommandDispatcher _commandDispatcher;
 
-    public DeletePostController(ILogger<NewPostController> logger, ICommandDispatcher commandDispatcher)
+    public DeletePostController(ILogger<DeletePostController> logger, ICommandDispatcher commandDispatcher)
     {
         _logger = logger;
         _commandDispatcher = commandDispatcher;

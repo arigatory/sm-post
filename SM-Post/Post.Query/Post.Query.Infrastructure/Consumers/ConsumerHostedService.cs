@@ -18,15 +18,29 @@ public class ConsumerHostedService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Event consumer service running.");
+        _logger.LogInformation("Event consumer service starting...");
 
-        using (IServiceScope scope = _serviceProvider.CreateScope())
+        Task.Run(async () =>
         {
-            var eventConsumer = scope.ServiceProvider.GetRequiredService<IEventConsumer>();
-            var topic = Environment.GetEnvironmentVariable("KAFKA_TOPIC");
+            var scope = _serviceProvider.CreateScope();
+            try
+            {
+                var eventConsumer = scope.ServiceProvider.GetRequiredService<IEventConsumer>();
+                var topic = Environment.GetEnvironmentVariable("KAFKA_TOPIC") ?? "SocialMediaPostEvents";
 
-            Task.Run(() => eventConsumer.Consume(topic), cancellationToken);
-        }
+                _logger.LogInformation("Starting to consume from topic: {Topic}", topic);
+                eventConsumer.Consume(topic);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in event consumer service");
+            }
+            finally
+            {
+                scope.Dispose();
+            }
+        }, cancellationToken);
+
         return Task.CompletedTask;
     }
 

@@ -22,7 +22,7 @@ public class EventHandler : IEventHandler
         {
             PostId = @event.Id,
             Author = @event.Author,
-            DatePosted = @event.DatePosted,
+            DatePosted = @event.DatePosted.ToUniversalTime(),
             Message = @event.Message,
         };
 
@@ -55,7 +55,7 @@ public class EventHandler : IEventHandler
         {
             PostId = @event.Id,
             CommentId = @event.CommentId,
-            CommentDate = @event.CommentDate,
+            CommentDate = @event.CommentDate.ToUniversalTime(),
             Comment = @event.Comment,
             Username = @event.Username,
             Edited = false
@@ -72,7 +72,7 @@ public class EventHandler : IEventHandler
 
         comment.Comment = @event.Comment;
         comment.Edited = true;
-        comment.CommentDate = @event.EditDate;
+        comment.CommentDate = @event.EditDate.ToUniversalTime();
 
         await _commentRepository.UpdateAsync(comment);
     }

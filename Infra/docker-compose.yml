@@ -2,29 +2,31 @@ version: '3.4'
 
 services:
   zookeeper:
-    image: docker.io/bitnami/zookeeper:3.9
+    image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
     restart: always
     ports:
       - '2181:2181'
     volumes:
-      - 'zookeeper_data:/bitnami'
+      - 'zookeeper_data:/var/lib/zookeeper'
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
   kafka:
-    image: docker.io/bitnami/kafka:3.5
+    image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
     ports:
       - '9092:9092'
     restart: always
+    user: root
     volumes:
-      - 'kafka_data:/bitnami'
+      - 'kafka_data:/var/lib/kafka/data'
     environment:
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
-      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     depends_on:
       - zookeeper
 

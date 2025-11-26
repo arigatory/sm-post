@@ -19,6 +19,7 @@ public class EventProducer : IEventProducer
         using var producer = new ProducerBuilder<string, string>(_config)
             .SetKeySerializer(Serializers.Utf8)
             .SetValueSerializer(Serializers.Utf8)
+            .SetErrorHandler((_, e) => Console.WriteLine($"Kafka Error: {e.Reason}"))
             .Build();
 
         var eventMessage = new Message<string, string>
@@ -27,11 +28,21 @@ public class EventProducer : IEventProducer
             Value = JsonSerializer.Serialize(@event, @event.GetType())
         };
 
-        var deliveryResult = await producer.ProduceAsync(topic, eventMessage);
-
-        if (deliveryResult.Status == PersistenceStatus.NotPersisted)
+        try
         {
-            throw new Exception($"Could not produce ${@event.GetType().Name} message to topic - {topic} due to the following reason: {deliveryResult.Message}.");
+            var deliveryResult = await producer.ProduceAsync(topic, eventMessage);
+
+            if (deliveryResult.Status == PersistenceStatus.NotPersisted)
+            {
+                throw new Exception($"Could not produce {(string.IsNullOrEmpty(@event.GetType().Name) ? "event" : @event.GetType().Name)} message to topic - {topic} due to the following reason: {deliveryResult.Message}.");
+            }
+
+            Console.WriteLine($"Successfully produced event to {topic}: {deliveryResult.Value}");
+        }
+        catch (ProduceException<string, string> ex)
+        {
+            Console.WriteLine($"Failed to produce message to {topic}: {ex.Error.Reason}");
+            throw;
         }
     }
 }

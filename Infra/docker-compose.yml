@@ -41,17 +41,6 @@ services:
     volumes:
       - 'mongo_data:/data/db'
 
-  sqlserver:
-    image: 'mcr.microsoft.com/mssql/server:2022-latest'
-    environment:
-      DOCKER_DEFAULT_PLATFORM: linux/arm64
-      ACCEPT_EULA: 'Y'
-      SA_PASSWORD: 'Password123'
-      MSSQL_PID: 'Express'
-    ports:
-      - '1433:1433'
-    restart: always
-
   postgres:
     container_name: postgres
     image: postgres

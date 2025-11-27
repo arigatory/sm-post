@@ -39,7 +39,7 @@ test_create_post() {
 
     local test_message="Health check test post at $(date '+%Y-%m-%d %H:%M:%S')"
 
-    response=$(curl -s -w "\n%{http_code}" -X POST "$CMD_API/api/v1/newPost" \
+    response=$(curl -s -w "\n%{http_code}" -X POST "$CMD_API/api/v1/posts" \
         -H "Content-Type: application/json" \
         -d "{\"author\":\"HealthCheck\",\"message\":\"$test_message\"}")
 
@@ -60,7 +60,7 @@ test_create_post() {
 test_query_posts() {
     echo -n "Testing POST query... "
 
-    response=$(curl -s -w "\n%{http_code}" -X GET "$QUERY_API/api/v1/postLookup")
+    response=$(curl -s -w "\n%{http_code}" -X GET "$QUERY_API/api/v1/posts")
 
     http_code=$(echo "$response" | tail -n1)
     body=$(echo "$response" | sed '$d')
@@ -87,7 +87,7 @@ test_query_post_by_id() {
     # Wait a bit for event processing
     sleep 2
 
-    response=$(curl -s -w "\n%{http_code}" -X GET "$QUERY_API/api/v1/postLookup/byId/$POST_ID")
+    response=$(curl -s -w "\n%{http_code}" -X GET "$QUERY_API/api/v1/posts/$POST_ID")
 
     http_code=$(echo "$response" | tail -n1)
     body=$(echo "$response" | sed '$d')
@@ -112,7 +112,7 @@ test_edit_post() {
 
     local updated_message="Updated health check message at $(date '+%Y-%m-%d %H:%M:%S')"
 
-    response=$(curl -s -w "\n%{http_code}" -X PUT "$CMD_API/api/v1/editMessage/$POST_ID" \
+    response=$(curl -s -w "\n%{http_code}" -X PUT "$CMD_API/api/v1/posts/$POST_ID/message" \
         -H "Content-Type: application/json" \
         -d "{\"message\":\"$updated_message\"}")
 
@@ -136,7 +136,7 @@ test_like_post() {
 
     echo -n "Testing POST like... "
 
-    response=$(curl -s -w "\n%{http_code}" -X PUT "$CMD_API/api/v1/likePost/$POST_ID")
+    response=$(curl -s -w "\n%{http_code}" -X PUT "$CMD_API/api/v1/posts/$POST_ID/like")
 
     http_code=$(echo "$response" | tail -n1)
 
@@ -158,7 +158,7 @@ test_add_comment() {
 
     echo -n "Testing comment add... "
 
-    response=$(curl -s -w "\n%{http_code}" -X PUT "$CMD_API/api/v1/addComment/$POST_ID" \
+    response=$(curl -s -w "\n%{http_code}" -X POST "$CMD_API/api/v1/posts/$POST_ID/comments" \
         -H "Content-Type: application/json" \
         -d "{\"comment\":\"Health check comment\",\"username\":\"HealthCheckBot\"}")
 
@@ -182,7 +182,7 @@ test_delete_post() {
 
     echo -n "Testing POST delete... "
 
-    response=$(curl -s -w "\n%{http_code}" -X DELETE "$CMD_API/api/v1/deletePost/$POST_ID" \
+    response=$(curl -s -w "\n%{http_code}" -X DELETE "$CMD_API/api/v1/posts/$POST_ID" \
         -H "Content-Type: application/json" \
         -d "{\"username\":\"HealthCheck\"}")
 
@@ -209,7 +209,7 @@ test_verify_deletion() {
     # Wait for event processing
     sleep 2
 
-    response=$(curl -s -w "\n%{http_code}" -X GET "$QUERY_API/api/v1/postLookup/byId/$POST_ID")
+    response=$(curl -s -w "\n%{http_code}" -X GET "$QUERY_API/api/v1/posts/$POST_ID")
 
     http_code=$(echo "$response" | tail -n1)
 

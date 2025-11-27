@@ -1,6 +1,6 @@
 using Confluent.Kafka;
+using Carter;
 using CQRS.Core.Consumers;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Post.Query.Domain.Repositories;
 using Post.Query.Infrastructure.Consumers;
@@ -31,10 +31,11 @@ builder.Services.AddScoped<IEventConsumer, EventConsumer>();
 // Register MediatR and handlers
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
-builder.Services.AddControllers();
+// Register Carter
+builder.Services.AddCarter();
+
 builder.Services.AddHostedService<ConsumerHostedService>();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -49,8 +50,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
-
-app.MapControllers();
+// Map Carter endpoints
+app.MapCarter();
 
 app.Run();

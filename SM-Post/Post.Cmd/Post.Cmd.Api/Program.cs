@@ -4,8 +4,8 @@ using CQRS.Core.Events;
 using CQRS.Core.Handlers;
 using CQRS.Core.Infrastructure;
 using CQRS.Core.Producers;
+using Carter;
 using Marten;
-using MediatR;
 using Post.Cmd.Domain.Aggregates;
 using Post.Cmd.Infrastructure.Config;
 using Post.Cmd.Infrastructure.Handlers;
@@ -36,8 +36,9 @@ builder.Services.AddScoped<IEventSourcingHandler<PostAggregate>, EventSourcingHa
 // Register MediatR and handlers
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Register Carter
+builder.Services.AddCarter();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -52,8 +53,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
-
-app.MapControllers();
+// Map Carter endpoints
+app.MapCarter();
 
 app.Run();

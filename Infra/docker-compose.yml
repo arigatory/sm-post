@@ -24,22 +24,24 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     depends_on:
       - zookeeper
 
-  mongo:
-    image: mongo
+  postgres-marten:
+    container_name: postgres-marten
+    image: postgres:16
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: eventstore
     ports:
-      - '27017:27017'
+      - '5433:5432'
     volumes:
-      - 'mongo_data:/data/db'
+      - 'marten_data:/var/lib/postgresql/data'
 
   postgres:
     container_name: postgres
@@ -52,12 +54,46 @@ services:
     volumes:
       - db:/data/postgres
 
+  post-cmd-api:
+    build:
+      context: ..
+      dockerfile: SM-Post/Post.Cmd/Post.Cmd.Api/Dockerfile
+    container_name: post-cmd-api
+    ports:
+      - '5262:5262'
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5262
+      - MartenConfig__ConnectionString=Host=postgres-marten;Port=5432;Database=eventstore;Username=postgres;Password=postgres
+      - ProducerConfig__BootstrapServers=kafka:9092
+    depends_on:
+      - postgres-marten
+      - kafka
+    restart: on-failure
+
+  post-query-api:
+    build:
+      context: ..
+      dockerfile: SM-Post/Post.Query/Post.Query.Api/Dockerfile
+    container_name: post-query-api
+    ports:
+      - '5263:5263'
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5263
+      - ConnectionStrings__PostgreSQL=Host=postgres;Port=5432;Database=SocialMedia;Username=postgres;Password=1234
+      - ConsumerConfig__BootstrapServers=kafka:9092
+    depends_on:
+      - postgres
+      - kafka
+    restart: on-failure
+
 volumes:
   zookeeper_data:
     driver: local
   kafka_data:
     driver: local
-  mongo_data:
+  marten_data:
     driver: local
   db:
 

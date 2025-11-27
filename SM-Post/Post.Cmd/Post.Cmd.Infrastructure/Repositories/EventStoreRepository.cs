@@ -1,43 +1,42 @@
 using CQRS.Core.Domain;
 using CQRS.Core.Events;
+using Marten;
 using Microsoft.Extensions.Options;
-using MongoDB.Driver;
 using Post.Cmd.Infrastructure.Config;
 
 namespace Post.Cmd.Infrastructure.Repositories
 {
     public class EventStoreRepository : IEventStoreRepository
     {
-        private readonly IMongoCollection<EventModel> _eventStoreCollection;
+        private readonly IDocumentStore _documentStore;
 
-        public EventStoreRepository(IOptions<MongoDbConfig> config)
+        public EventStoreRepository(IDocumentStore documentStore)
         {
-            var mongoClient = new MongoClient(config.Value.ConnectionString);
-            var mongoDatabase = mongoClient.GetDatabase(config.Value.Database);
-
-            _eventStoreCollection = mongoDatabase.GetCollection<EventModel>(config.Value.Collection);
+            _documentStore = documentStore;
         }
 
         public async Task<List<EventModel>> FindAllAsync()
         {
-            return await _eventStoreCollection
-                            .Find(_ => true)
-                            .ToListAsync()
-                            .ConfigureAwait(false);
+            using var session = _documentStore.QuerySession();
+            var events = await session.Query<EventModel>().ToListAsync();
+            return events.ToList();
         }
 
         public async Task<List<EventModel>> FindByAggregateId(Guid aggregateId)
         {
-            return await _eventStoreCollection
-                .Find(x => x.AggregateIdentifier == aggregateId)
-                .ToListAsync()
-                .ConfigureAwait(false);
+            using var session = _documentStore.QuerySession();
+            var events = await session.Query<EventModel>()
+                .Where(x => x.AggregateIdentifier == aggregateId)
+                .OrderBy(x => x.Version)
+                .ToListAsync();
+            return events.ToList();
         }
 
         public async Task SaveAsync(EventModel @event)
         {
-            await _eventStoreCollection.InsertOneAsync(@event)
-                .ConfigureAwait(false);
+            using var session = _documentStore.LightweightSession();
+            session.Store(@event);
+            await session.SaveChangesAsync();
         }
     }
 }

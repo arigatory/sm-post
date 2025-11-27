@@ -1,4 +1,4 @@
-using CQRS.Core.Infrastructure;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Post.Common.DTOs;
 using Post.Query.Api.DTOs;
@@ -12,13 +12,13 @@ namespace Post.Query.Api.Controllers;
 public class PostLookupController : ControllerBase
 {
     private readonly ILogger<PostLookupController> _logger;
-    private readonly IQueryDispatcher<PostEntity> _queryDispatcher;
+    private readonly IMediator _mediator;
 
     public PostLookupController(
-        IQueryDispatcher<PostEntity> queryDispatcher,
+        IMediator mediator,
         ILogger<PostLookupController> logger)
     {
-        _queryDispatcher = queryDispatcher;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -27,7 +27,7 @@ public class PostLookupController : ControllerBase
     {
         try
         {
-            var posts = await _queryDispatcher.SendAsync(new FindAllPostsQuery());
+            var posts = await _mediator.Send(new FindAllPostsQuery());
             return NormalResponse(posts);
         }
         catch (Exception ex)
@@ -42,7 +42,7 @@ public class PostLookupController : ControllerBase
     {
         try
         {
-            var posts = await _queryDispatcher.SendAsync(new FindPostByIdQuery { Id = postId });
+            var posts = await _mediator.Send(new FindPostByIdQuery { Id = postId });
 
             if (posts == null || !posts.Any()) return NoContent();
 
@@ -66,7 +66,7 @@ public class PostLookupController : ControllerBase
     {
         try
         {
-            var posts = await _queryDispatcher.SendAsync(new FindPostsByAuthorQuery { Author = author });
+            var posts = await _mediator.Send(new FindPostsByAuthorQuery { Author = author });
 
             return NormalResponse(posts);
         }
@@ -82,7 +82,7 @@ public class PostLookupController : ControllerBase
     {
         try
         {
-            var posts = await _queryDispatcher.SendAsync(new FindAllPostsWithCommentsQuery());
+            var posts = await _mediator.Send(new FindAllPostsWithCommentsQuery());
             return NormalResponse(posts);
         }
         catch (Exception ex)
@@ -97,7 +97,7 @@ public class PostLookupController : ControllerBase
     {
         try
         {
-            var posts = await _queryDispatcher.SendAsync(new FindAllPostsWithLikesQuery{ NumberOfLikes = numberOfLikes});
+            var posts = await _mediator.Send(new FindAllPostsWithLikesQuery{ NumberOfLikes = numberOfLikes});
             return NormalResponse(posts);
         }
         catch (Exception ex)

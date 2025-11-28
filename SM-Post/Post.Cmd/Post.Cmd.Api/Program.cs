@@ -5,7 +5,9 @@ using CQRS.Core.Handlers;
 using CQRS.Core.Infrastructure;
 using CQRS.Core.Producers;
 using Carter;
+using FluentValidation;
 using Marten;
+using Post.Cmd.Api.Behaviors;
 using Post.Cmd.Domain.Aggregates;
 using Post.Cmd.Infrastructure.Config;
 using Post.Cmd.Infrastructure.Handlers;
@@ -37,8 +39,15 @@ builder.Services.AddScoped<IEventProducer, EventProducer>();
 builder.Services.AddScoped<IEventStore, EventStore>();
 builder.Services.AddScoped<IEventSourcingHandler<PostAggregate>, EventSourcingHandler>();
 
-// Register MediatR and handlers
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+// Register FluentValidation
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// Register MediatR and handlers with validation behavior
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
 
 // Register Carter
 builder.Services.AddCarter();

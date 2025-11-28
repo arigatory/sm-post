@@ -1,5 +1,7 @@
 using Carter;
+using FluentValidation;
 using MediatR;
+using Post.Cmd.Api.Extensions;
 using Post.Common.DTOs;
 
 namespace Post.Cmd.Api.Features.Posts.CreatePost;
@@ -21,6 +23,10 @@ public class CreatePostEndpoint : ICarterModule
                     Message = "New post creation request completed successfully!",
                     Id = id
                 });
+            }
+            catch (ValidationException ex)
+            {
+                return ValidationExtensions.HandleValidationException(ex, logger);
             }
             catch (InvalidOperationException ex)
             {

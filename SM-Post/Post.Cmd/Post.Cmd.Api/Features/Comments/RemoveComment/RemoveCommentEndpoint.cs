@@ -1,7 +1,9 @@
 using Carter;
 using CQRS.Core.Exceptions;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Post.Cmd.Api.Extensions;
 using Post.Common.DTOs;
 
 namespace Post.Cmd.Api.Features.Comments.RemoveComment;
@@ -22,6 +24,10 @@ public class RemoveCommentEndpoint : ICarterModule
                 {
                     Message = "Remove comment request completed successfully!"
                 });
+            }
+            catch (ValidationException ex)
+            {
+                return ValidationExtensions.HandleValidationException(ex, logger);
             }
             catch (InvalidOperationException ex)
             {

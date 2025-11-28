@@ -1,6 +1,8 @@
 using Carter;
 using CQRS.Core.Exceptions;
+using FluentValidation;
 using MediatR;
+using Post.Cmd.Api.Extensions;
 using Post.Common.DTOs;
 
 namespace Post.Cmd.Api.Features.Posts.LikePost;
@@ -20,6 +22,10 @@ public class LikePostEndpoint : ICarterModule
                 {
                     Message = "Like post request completed successfully!"
                 });
+            }
+            catch (ValidationException ex)
+            {
+                return ValidationExtensions.HandleValidationException(ex, logger);
             }
             catch (InvalidOperationException ex)
             {

@@ -20,7 +20,9 @@ public class PostCreatedEventHandler : INotificationHandler<PostCreatedEvent>
         {
             PostId = notification.Id,
             Author = notification.Author,
-            DatePosted = notification.DatePosted,
+            DatePosted = notification.DatePosted.Kind == DateTimeKind.Utc 
+                ? notification.DatePosted 
+                : notification.DatePosted.ToUniversalTime(),
             Message = notification.Message
         };
 

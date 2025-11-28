@@ -20,7 +20,9 @@ public class CommentUpdatedEventHandler : INotificationHandler<CommentUpdatedEve
 
         comment.Comment = notification.Comment;
         comment.Edited = true;
-        comment.CommentDate = notification.EditDate;
+        comment.CommentDate = notification.EditDate.Kind == DateTimeKind.Utc 
+            ? notification.EditDate 
+            : notification.EditDate.ToUniversalTime();
 
         await _commentRepository.UpdateAsync(comment);
     }

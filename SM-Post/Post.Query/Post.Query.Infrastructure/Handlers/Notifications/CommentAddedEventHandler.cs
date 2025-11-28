@@ -20,7 +20,9 @@ public class CommentAddedEventHandler : INotificationHandler<CommentAddedEvent>
         {
             PostId = notification.Id,
             CommentId = notification.CommentId,
-            CommentDate = notification.CommentDate,
+            CommentDate = notification.CommentDate.Kind == DateTimeKind.Utc 
+                ? notification.CommentDate 
+                : notification.CommentDate.ToUniversalTime(),
             Comment = notification.Comment,
             Username = notification.Username,
             Edited = false

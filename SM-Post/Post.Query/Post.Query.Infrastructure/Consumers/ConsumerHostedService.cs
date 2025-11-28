@@ -20,7 +20,7 @@ public class ConsumerHostedService : IHostedService
     {
         _logger.LogInformation("Event consumer service starting...");
 
-        Task.Run(async () =>
+        _ = Task.Run(async () =>
         {
             var scope = _serviceProvider.CreateScope();
             try

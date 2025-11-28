@@ -1,9 +1,10 @@
 using CQRS.Core.Queries;
+using MediatR;
 using Post.Query.Domain.Entities;
 
 namespace Post.Query.Api.Features.Posts.GetPostsByAuthor;
 
-public class GetPostsByAuthorQuery : BaseQuery<List<PostEntity>>
+public class GetPostsByAuthorQuery : IRequest<List<PostEntity>>
 {
-    public string Author { get; set; }
+    public required string Author { get; set; }
 }

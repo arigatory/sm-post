@@ -2,21 +2,21 @@ using System.Text.Json;
 using Confluent.Kafka;
 using CQRS.Core.Consumers;
 using CQRS.Core.Events;
+using MediatR;
 using Microsoft.Extensions.Options;
 using Post.Query.Infrastructure.Converters;
-using Post.Query.Infrastructure.Handlers;
 
 namespace Post.Query.Infrastructure.Consumers;
 
 public class EventConsumer : IEventConsumer
 {
     private readonly ConsumerConfig _config;
-    private readonly IEventHandler _eventHandler;
+    private readonly IMediator _mediator;
 
-    public EventConsumer(IOptions<ConsumerConfig> consumerConfig, IEventHandler eventHandler)
+    public EventConsumer(IOptions<ConsumerConfig> consumerConfig, IMediator mediator)
     {
         _config = consumerConfig.Value;
-        _eventHandler = eventHandler;
+        _mediator = mediator;
     }
 
     public void Consume(string topic)
@@ -51,25 +51,18 @@ public class EventConsumer : IEventConsumer
 
                 Console.WriteLine($"Processing event type: {@event.Type}");
 
-                var handlerMethod = _eventHandler.GetType().GetMethod("On", new Type[] { @event.GetType() });
-
-                if (handlerMethod == null)
+                if (@event is INotification notification)
                 {
-                    Console.WriteLine($"Could not find handler method for event type: {@event.GetType().Name}");
+                    // Publish via MediatR - all registered handlers will be invoked
+                    _mediator.Publish(notification).GetAwaiter().GetResult();
                     consumer.Commit(consumerResult);
-                    continue;
+                    Console.WriteLine($"Successfully processed and committed event: {@event.Type}");
                 }
-
-                // Invoke the async handler method and await it
-                var task = (Task)handlerMethod.Invoke(_eventHandler, new object[] { @event });
-                if (task != null)
+                else
                 {
-                    task.Wait();
+                    Console.WriteLine($"Event does not implement INotification: {@event.GetType().Name}");
+                    consumer.Commit(consumerResult);
                 }
-
-                consumer.Commit(consumerResult);
-
-                Console.WriteLine($"Successfully processed and committed event: {@event.Type}");
             }
             catch (ConsumeException ex)
             {

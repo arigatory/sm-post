@@ -1,0 +1,76 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: post-cmd-api-config
+  namespace: cqrs-app
+data:
+  ASPNETCORE_ENVIRONMENT: "Development"
+  ASPNETCORE_URLS: "http://+:5262"
+  MartenConfig__ConnectionString: "Host=postgres-marten;Port=5432;Database=eventstore;Username=postgres;Password=postgres"
+  ProducerConfig__BootstrapServers: "kafka:9092"
+  KAFKA_TOPIC: "SocialMediaPostEvents"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post-cmd-api
+  namespace: cqrs-app
+spec:
+  replicas: 2 # 2 replicas for high availability
+  selector:
+    matchLabels:
+      app: post-cmd-api
+  template:
+    metadata:
+      labels:
+        app: post-cmd-api
+    spec:
+      containers:
+      - name: post-cmd-api
+        image: infra-post-cmd-api:latest
+        imagePullPolicy: Never # For local Kubernetes (minikube/docker-desktop)
+        ports:
+        - containerPort: 5262
+          name: http
+        envFrom:
+        - configMapRef:
+            name: post-cmd-api-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /swagger/index.html
+            port: 5262
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /swagger/index.html
+            port: 5262
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: post-cmd-api
+  namespace: cqrs-app
+spec:
+  type: NodePort
+  ports:
+  - port: 5262
+    targetPort: 5262
+    nodePort: 30262
+    name: http
+  selector:
+    app: post-cmd-api

@@ -22,6 +22,10 @@ builder.Services.Configure<ProducerConfig>(builder.Configuration.GetSection(name
 
 // Configure Marten
 var martenConfig = builder.Configuration.GetSection(nameof(MartenConfig)).Get<MartenConfig>();
+
+// Configure Npgsql to use UTC timestamps
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 builder.Services.AddMarten(opts =>
 {
     opts.Connection(martenConfig.ConnectionString);
@@ -39,6 +43,17 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Progr
 // Register Carter
 builder.Services.AddCarter();
 
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -51,7 +66,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
 
 // Map Carter endpoints
 app.MapCarter();

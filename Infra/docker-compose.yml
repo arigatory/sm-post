@@ -75,6 +75,7 @@ services:
       - ASPNETCORE_URLS=http://+:5262
       - MartenConfig__ConnectionString=Host=postgres-marten;Port=5432;Database=eventstore;Username=postgres;Password=postgres
       - ProducerConfig__BootstrapServers=kafka:9092
+      - KAFKA_TOPIC=SocialMediaPostEvents
     depends_on:
       - postgres-marten
       - kafka
@@ -95,6 +96,20 @@ services:
     depends_on:
       - postgres
       - kafka
+    restart: on-failure
+
+  client:
+    build:
+      context: ../client
+      dockerfile: Dockerfile
+    container_name: client
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - post-cmd-api
+      - post-query-api
     restart: on-failure
 
 volumes:

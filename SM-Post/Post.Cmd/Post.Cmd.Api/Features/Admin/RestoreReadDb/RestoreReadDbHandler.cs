@@ -15,7 +15,7 @@ public class RestoreReadDbHandler : IRequestHandler<RestoreReadDbCommand, Unit>
 
     public async Task<Unit> Handle(RestoreReadDbCommand request, CancellationToken cancellationToken)
     {
-        await _eventSourcingHandler.RepublishEventsAsync();
+        await _eventSourcingHandler.RepublishEventsAsync(request.RestoreToDateTime);
         return Unit.Value;
     }
 }

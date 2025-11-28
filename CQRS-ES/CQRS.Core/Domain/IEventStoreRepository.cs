@@ -8,5 +8,7 @@ namespace CQRS.Core.Domain
         Task<List<EventModel>> FindByAggregateId(Guid aggregateId);
 
         Task<List<EventModel>> FindAllAsync();
+        
+        Task DeleteEventsAfterAsync(DateTime dateTime);
     }
 }

@@ -38,5 +38,28 @@ namespace Post.Cmd.Infrastructure.Repositories
             session.Store(@event);
             await session.SaveChangesAsync();
         }
+
+        public async Task DeleteEventsAfterAsync(DateTime dateTime)
+        {
+            using var session = _documentStore.LightweightSession();
+            
+            // Ensure we're using UTC
+            var utcDateTime = dateTime.Kind == DateTimeKind.Utc ? dateTime : dateTime.ToUniversalTime();
+            
+            // Use proper Marten syntax for DateTime comparison
+            var eventsToDelete = await session.Query<EventModel>()
+                .Where(x => x.TimeStamp > utcDateTime)
+                .ToListAsync();
+            
+            foreach (var @event in eventsToDelete)
+            {
+                session.Delete(@event);
+            }
+            
+            if (eventsToDelete.Any())
+            {
+                await session.SaveChangesAsync();
+            }
+        }
     }
 }

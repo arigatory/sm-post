@@ -26,7 +26,8 @@ public class EventStore : IEventStore
 
         if (eventStream == null || !eventStream.Any())
         {
-            throw new ArgumentNullException(nameof(eventStream), "Could not retrieve event stream from the event store!");
+            // Return empty list instead of throwing exception - allows operations on empty event store
+            return new List<Guid>();
         }
 
         return eventStream.Select(x => x.AggregateIdentifier).Distinct().ToList();
@@ -35,14 +36,22 @@ public class EventStore : IEventStore
     public async Task<List<BaseEvent>> GetEventsAsync(Guid aggregateId)
     {
         var eventStream = await _eventStoreRepository.FindByAggregateId(aggregateId);
-
+        
         if (eventStream == null || !eventStream.Any())
             throw new AggregateNotFoundException("Incorrect post ID provided!");
-
+        
         return eventStream.OrderBy(x => x.Version).Select(x => x.EventData).ToList();
     }
 
-    public async Task SaveEventAsync(Guid aggregateId, IEnumerable<BaseEvent> events, int expectedVersion)
+    public async Task<List<EventModel>> GetEventModelsAsync(Guid aggregateId)
+    {
+        var eventStream = await _eventStoreRepository.FindByAggregateId(aggregateId);
+        
+        if (eventStream == null || !eventStream.Any())
+            throw new AggregateNotFoundException("Incorrect post ID provided!");
+        
+        return eventStream.OrderBy(x => x.Version).ToList();
+    }    public async Task SaveEventAsync(Guid aggregateId, IEnumerable<BaseEvent> events, int expectedVersion)
     {
         var eventStream = await _eventStoreRepository.FindByAggregateId(aggregateId);
 
@@ -71,5 +80,10 @@ public class EventStore : IEventStore
             var topic = Environment.GetEnvironmentVariable("KAFKA_TOPIC") ?? "SocialMediaPostEvents";
             await _eventProducer.ProduceAsync(topic, @event);
         }
+    }
+
+    public async Task DeleteEventsAfterAsync(DateTime dateTime)
+    {
+        await _eventStoreRepository.DeleteEventsAfterAsync(dateTime);
     }
 }

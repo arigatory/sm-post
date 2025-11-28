@@ -8,5 +8,5 @@ public interface IEventSourcingHandler<T>  where T : class
 
     Task<T> GetByIdAsync(Guid id);
 
-    Task RepublishEventsAsync();
+    Task RepublishEventsAsync(DateTime? restoreToDateTime = null);
 }

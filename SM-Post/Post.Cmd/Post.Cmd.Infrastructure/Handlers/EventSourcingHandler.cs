@@ -29,7 +29,7 @@ public class EventSourcingHandler : IEventSourcingHandler<PostAggregate>
         return aggregate;
     }
 
-    public async Task RepublishEventsAsync()
+    public async Task RepublishEventsAsync(DateTime? restoreToDateTime = null)
     {
         var aggreageIds = await _eventStore.GetAggregateIdsAsync();
 
@@ -41,9 +41,16 @@ public class EventSourcingHandler : IEventSourcingHandler<PostAggregate>
 
             if (aggregate == null || !aggregate.Active) continue;
 
-            var events = await _eventStore.GetEventsAsync(aggreageId);
-
-            foreach (var @event in events)
+            var eventModels = await _eventStore.GetEventModelsAsync(aggreageId);
+            
+            // Filter events by datetime if specified (ensure UTC)
+            var filterDateTime = restoreToDateTime.HasValue 
+                ? (restoreToDateTime.Value.Kind == DateTimeKind.Utc ? restoreToDateTime.Value : restoreToDateTime.Value.ToUniversalTime())
+                : (DateTime?)null;
+            
+            var eventsToReplay = filterDateTime.HasValue
+                ? eventModels.Where(e => e.TimeStamp <= filterDateTime.Value).Select(e => e.EventData).ToList()
+                : eventModels.Select(e => e.EventData).ToList();            foreach (var @event in eventsToReplay)
             {
                 var topic = Environment.GetEnvironmentVariable("KAFKA_TOPIC");
                 await _eventProducer.ProduceAsync(topic, @event);
